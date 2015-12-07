@@ -78,7 +78,11 @@
 }
 
 + (NSArray*)getValuesForNonEncryptedQuery:(NSString*)query {
-    NSArray* vals = [[self kvDatabase] getValsForQuery:query];
+    return [self getValuesForNonEncryptedQuery:query withLimit:0];
+}
+
++ (NSArray*)getValuesForNonEncryptedQuery:(NSString*)query withLimit:(int)limit {
+    NSArray* vals = [[self kvDatabase] getValsForQuery:query withLimit:limit];
     NSMutableArray* results = [NSMutableArray array];
     for (NSString* val in vals) {
         if (val && [val length]>0){
@@ -90,6 +94,7 @@
     }
     
     return results;
+    
 }
 
 + (NSString*)getOneForNonEncryptedQuery:(NSString*)query {

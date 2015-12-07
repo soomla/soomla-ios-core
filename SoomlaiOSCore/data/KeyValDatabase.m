@@ -168,6 +168,10 @@
 }
 
 - (NSArray*)getValsForQuery:(NSString*)query {
+    return [self getValsForQuery:query withLimit:0];
+}
+
+- (NSArray*)getValsForQuery:(NSString*)query withLimit:(int)limit {
     @synchronized(self) {
         NSMutableArray *results = [NSMutableArray array];
         NSString* databasebPath = [[SoomlaUtils applicationDirectory] stringByAppendingPathComponent:DATABASE_NAME];
@@ -175,9 +179,15 @@
         {
             sqlite3_stmt *statement = nil;
             query = [query stringByReplacingOccurrencesOfString:@"*" withString:@"%"];
-            const char *sql = [[NSString stringWithFormat:@"SELECT %@ FROM %@ WHERE %@ LIKE '%@'", KEYVAL_COLUMN_VAL, KEYVAL_TABLE_NAME, KEYVAL_COLUMN_KEY, query] UTF8String];
+            NSString *limitStr = limit > 0? [NSString stringWithFormat:@" LIMIT %d", limit] : @"";
+            const char *sql = [[NSString stringWithFormat:@"SELECT %@ FROM %@ WHERE %@ LIKE '%@'%@",
+                                KEYVAL_COLUMN_VAL,
+                                KEYVAL_TABLE_NAME,
+                                KEYVAL_COLUMN_KEY,
+                                query,
+                                limitStr] UTF8String];
             if (sqlite3_prepare_v2(database, sql, -1, &statement, NULL) != SQLITE_OK) {
-                LogError(TAG, ([NSString stringWithFormat:@"Error while fetching %@ LIKE '%@' : %s", KEYVAL_COLUMN_KEY, query, sqlite3_errmsg(database)]));
+                LogError(TAG, ([NSString stringWithFormat:@"Error while fetching %@ LIKE '%@'%@ : %s", KEYVAL_COLUMN_KEY, query, limitStr, sqlite3_errmsg(database)]));
             } else {
                 while (sqlite3_step(statement) == SQLITE_ROW) {
                     int colType = sqlite3_column_type(statement, 0);

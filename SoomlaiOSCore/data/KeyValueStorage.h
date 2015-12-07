@@ -63,6 +63,15 @@
 + (NSArray*)getValuesForNonEncryptedQuery:(NSString*)query;
 
 /**
+ Retrieves the values of the key-val pairs that answer the given `query`.
+ 
+ @param query What to fetch from the DB.
+ @param limit the max amount of fetched entries.
+ @return The values that answer the given `query`.
+ */
++ (NSArray*)getValuesForNonEncryptedQuery:(NSString*)query withLimit:(int)limit;
+
+/**
  Retrieves ONE of the key-val pairs that answer the given `query`.
  
  @param query What to fetch from the DB.
