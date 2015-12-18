@@ -38,22 +38,40 @@
 
 + (NSString *)encryptString:(NSString *)data{
     @synchronized(self) {
+        return [self encryptString:data withKey:nil];
+    }
+}
+
++ (NSString *)encryptString:(NSString *)data withKey:(NSString *)key{
+    @synchronized(self) {
         return [FBEncryptorAES encryptBase64String:data
-                                         keyString:[self key]
+                                         keyString:key? : [self key]
                                      separateLines:NO];
     }
 }
 
 + (NSString *)decryptToString:(NSString *)data{
     @synchronized(self) {
+        return [self decryptToString:data withKey:nil];
+    }
+}
+
++ (NSString *)decryptToString:(NSString *)data withKey:(NSString *)key{
+    @synchronized(self) {
         return [FBEncryptorAES decryptBase64String:data
-                                         keyString:[self key]];
+                                         keyString:key? : [self key]];
     }
 }
 
 + (NSString *)encryptNumber:(NSNumber *)data{
     @synchronized(self) {
         return [self encryptString:[data stringValue]];
+    }
+}
+
++ (NSString *)encryptNumber:(NSNumber *)data withKey:(NSString *)key{
+    @synchronized(self) {
+        return [self encryptString:[data stringValue] withKey:key];
     }
 }
 
@@ -66,15 +84,38 @@
     }
 }
 
++ (NSNumber *)decryptToNumber:(NSString *)data withKey:(NSString *)key{
+    @synchronized(self) {
+        data = [self decryptToString:data withKey:key];
+        NSNumberFormatter * f = [[NSNumberFormatter alloc] init];
+        [f setNumberStyle:NSNumberFormatterDecimalStyle];
+        return [f numberFromString:data];
+    }
+}
+
 + (NSString *)encryptBoolean:(BOOL)data{
     @synchronized(self) {
         return [self encryptString:[[NSNumber numberWithBool:data] stringValue]];
     }
 }
 
++ (NSString *)encryptBoolean:(BOOL)data withKey:(NSString *)key{
+    @synchronized(self) {
+        return [self encryptString:[[NSNumber numberWithBool:data] stringValue] withKey:key];
+    }
+}
+
 + (BOOL)decryptToBoolean:(NSString *)data{
     @synchronized(self) {
         data = [self decryptToString:data];
+        NSNumber *res = [NSNumber numberWithInt:[data intValue]];
+        return [res boolValue];
+    }
+}
+
++ (BOOL)decryptToBoolean:(NSString *)data withKey:(NSString *)key{
+    @synchronized(self) {
+        data = [self decryptToString:data withKey:key];
         NSNumber *res = [NSNumber numberWithInt:[data intValue]];
         return [res boolValue];
     }
