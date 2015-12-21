@@ -23,6 +23,7 @@
 static NSString* TAG = @"SOOMLA SoomlaUtils";
 
 static NSString *const SOOMLA_DEVICE_KEY = @"soomlaDeviceId";
+static NSString *const SOOMLA_GENERATED_KEY = @"soomlaGeneratedId";
 
 + (void)LogDebug:(NSString*)tag withMessage:(NSString*)msg {
     if (DEBUG_LOG) {
@@ -35,16 +36,12 @@ static NSString *const SOOMLA_DEVICE_KEY = @"soomlaDeviceId";
 }
 
 + (NSString*)deviceIdPreferVendor {
-    NSString *soomlaDeviceKey = [[NSUserDefaults standardUserDefaults] stringForKey:SOOMLA_DEVICE_KEY];
-    if (!soomlaDeviceKey) {
-        if ([[UIDevice currentDevice] respondsToSelector:@selector(identifierForVendor)]) {
-            soomlaDeviceKey = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
-        } else {
-            soomlaDeviceKey = @"SOOMLA_ID_1234567890";
-        }
-        [[NSUserDefaults standardUserDefaults] setObject:soomlaDeviceKey forKey:SOOMLA_DEVICE_KEY];
+    NSString *soomlaDeviceId = [[NSUserDefaults standardUserDefaults] stringForKey:SOOMLA_DEVICE_KEY];
+    if (!soomlaDeviceId) {
+        soomlaDeviceId = [SoomlaUtils vendorId];
+        [[NSUserDefaults standardUserDefaults] setObject:soomlaDeviceId forKey:SOOMLA_DEVICE_KEY];
     }
-    return soomlaDeviceKey;
+    return soomlaDeviceId;
 }
 
 /* We check for UDID_SOOMLA to support devices with older versions of ios-store */
@@ -54,6 +51,25 @@ static NSString *const SOOMLA_DEVICE_KEY = @"soomlaDeviceId";
 	return [self deviceIdPreferVendor];
     }
     return udid;
+}
+
++ (NSString*)vendorId {
+    NSString *vendorId;
+    if ([[UIDevice currentDevice] respondsToSelector:@selector(identifierForVendor)]) {
+        vendorId = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
+    } else {
+        vendorId = [SoomlaUtils generateSoomlaId];
+    }
+    return vendorId;
+}
+
++ (NSString*)generateSoomlaId {
+    NSString *soomlaGeneratedId = [[NSUserDefaults standardUserDefaults] stringForKey:SOOMLA_GENERATED_KEY];
+    if (!soomlaGeneratedId) {
+        soomlaGeneratedId = [NSString stringWithFormat:@"SOOMLA_ID_i%05d%05d", arc4random_uniform(100000), arc4random_uniform(100000)];
+        [[NSUserDefaults standardUserDefaults] setObject:soomlaGeneratedId forKey:SOOMLA_GENERATED_KEY];
+    }
+    return soomlaGeneratedId;
 }
 
 + (NSMutableDictionary*)jsonStringToDict:(NSString*)str {

@@ -48,6 +48,13 @@
  */
 + (NSString*)deviceId;
 
+/**
+ * Retrieves the Id for Vendors.
+ *
+ * @return The id for vendors being used.
+ */
++ (NSString*)vendorId;
+
 
 + (NSMutableDictionary*)jsonStringToDict:(NSString*)str;
 
