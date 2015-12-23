@@ -33,64 +33,64 @@
 @implementation KeyValueStorage
 
 + (NSString*)getValueForKey:(NSString*)key {
-    return [[self kvStorage] getValueForKey:key];
+    return [[self getDefaultStorage] getValueForKey:key];
 }
 
 + (void)setValue:(NSString*)val forKey:(NSString*)key {
-    [[self kvStorage] setValue:val forKey:key];
+    [[self getDefaultStorage] setValue:val forKey:key];
 }
 
 + (void)deleteValueForKey:(NSString*)key {
-    [[self kvStorage] deleteValueForKey:key];
+    [[self getDefaultStorage] deleteValueForKey:key];
 }
 
 + (NSDictionary*)getKeysValuesForNonEncryptedQuery:(NSString*)query {
-    return [[self kvStorage] getKeysValuesForNonEncryptedQuery:query];
+    return [[self getDefaultStorage] getKeysValuesForNonEncryptedQuery:query];
 }
 
 + (NSArray*)getValuesForNonEncryptedQuery:(NSString*)query {
-    return [[self kvStorage] getValuesForNonEncryptedQuery:query];
+    return [[self getDefaultStorage] getValuesForNonEncryptedQuery:query];
 }
 
 + (NSArray*)getValuesForNonEncryptedQuery:(NSString*)query withLimit:(int)limit {
-    return [[self kvStorage] getValuesForNonEncryptedQuery:query withLimit:limit];
+    return [[self getDefaultStorage] getValuesForNonEncryptedQuery:query withLimit:limit];
 }
 
 + (NSString*)getOneForNonEncryptedQuery:(NSString*)query {
-    return [[self kvStorage] getOneForNonEncryptedQuery:query];
+    return [[self getDefaultStorage] getOneForNonEncryptedQuery:query];
 }
 
 + (int)getCountForNonEncryptedQuery:(NSString*)query {
-    return [[self kvStorage] getCountForNonEncryptedQuery:query];
+    return [[self getDefaultStorage] getCountForNonEncryptedQuery:query];
 }
 
 + (NSString*)getValueForNonEncryptedKey:(NSString*)key {
-    return [[self kvStorage] getValueForNonEncryptedKey:key];
+    return [[self getDefaultStorage] getValueForNonEncryptedKey:key];
 }
 
 + (NSArray *)getEncryptedKeys {
-    return [[self kvStorage] getEncryptedKeys];
+    return [[self getDefaultStorage] getEncryptedKeys];
 }
 
 + (void)setValue:(NSString*)val forNonEncryptedKey:(NSString*)key {
-    [[self kvStorage] setValue:val forNonEncryptedKey:key];
+    [[self getDefaultStorage] setValue:val forNonEncryptedKey:key];
 }
 
 + (void)deleteValueForNonEncryptedKey:(NSString*)key {
-    [[self kvStorage] deleteValueForNonEncryptedKey:key];
+    [[self getDefaultStorage] deleteValueForNonEncryptedKey:key];
 }
 
 + (void)purge {
-    [[self kvStorage] purge];
+    [[self getDefaultStorage] purge];
 }
 
-+ (KeyValueStorage*)kvStorage {
-    static KeyValueStorage* kvStorage;
-    if (!kvStorage) {
-        kvStorage = [[KeyValueStorage alloc] initWithName:SOOMLA_DATABASE_NAME andSecret:SOOMLA_SECRET];
++ (KeyValueStorage*)getDefaultStorage {
+    static KeyValueStorage* defaultStorage;
+    if (!defaultStorage) {
+        defaultStorage = [[KeyValueStorage alloc] initWithName:SOOMLA_DATABASE_NAME andSecret:SOOMLA_SECRET];
     }
     
-    return kvStorage;
+    return defaultStorage;
 }
 
 

@@ -125,6 +125,13 @@
  */
 + (void)purge;
 
+/**
+ Gets the default storage
+ 
+ @return the default storage
+ */
++ (KeyValueStorage*)getDefaultStorage;
+
 
 /**
  Initializes a KeyValueStorage instance with a name and a secret.
