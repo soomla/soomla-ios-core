@@ -1,12 +1,12 @@
 /*
  Copyright (C) 2012-2014 Soomla Inc.
- 
+
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
- 
+
  http://www.apache.org/licenses/LICENSE-2.0
- 
+
  Unless required by applicable law or agreed to in writing, software
  distributed under the License is distributed on an "AS IS" BASIS,
  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,6 +23,7 @@
 static NSString* TAG = @"SOOMLA SoomlaUtils";
 
 static NSString *const SOOMLA_DEVICE_KEY = @"soomlaDeviceId";
+static NSString *const SOOMLA_GENERATED_KEY = @"soomlaGeneratedId";
 
 + (void)LogDebug:(NSString*)tag withMessage:(NSString*)msg {
     if (DEBUG_LOG) {
@@ -35,16 +36,12 @@ static NSString *const SOOMLA_DEVICE_KEY = @"soomlaDeviceId";
 }
 
 + (NSString*)deviceIdPreferVendor {
-    NSString *soomlaDeviceKey = [[NSUserDefaults standardUserDefaults] stringForKey:SOOMLA_DEVICE_KEY];
-    if (!soomlaDeviceKey) {
-        if ([[UIDevice currentDevice] respondsToSelector:@selector(identifierForVendor)]) {
-            soomlaDeviceKey = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
-        } else {
-            soomlaDeviceKey = @"SOOMLA_ID_1234567890";
-        }
-        [[NSUserDefaults standardUserDefaults] setObject:soomlaDeviceKey forKey:SOOMLA_DEVICE_KEY];
+    NSString *soomlaDeviceId = [[NSUserDefaults standardUserDefaults] stringForKey:SOOMLA_DEVICE_KEY];
+    if (!soomlaDeviceId) {
+        soomlaDeviceId = [SoomlaUtils vendorId];
+        [[NSUserDefaults standardUserDefaults] setObject:soomlaDeviceId forKey:SOOMLA_DEVICE_KEY];
     }
-    return soomlaDeviceKey;
+    return soomlaDeviceId;
 }
 
 /* We check for UDID_SOOMLA to support devices with older versions of ios-store */
@@ -55,6 +52,26 @@ static NSString *const SOOMLA_DEVICE_KEY = @"soomlaDeviceId";
     }
     return udid;
 }
+
++ (NSString*)vendorId {
+    NSString *vendorId;
+    if ([[UIDevice currentDevice] respondsToSelector:@selector(identifierForVendor)]) {
+        vendorId = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
+    } else {
+        vendorId = [SoomlaUtils generateSoomlaId];
+    }
+    return vendorId;
+}
+
++ (NSString*)generateSoomlaId {
+    NSString *soomlaGeneratedId = [[NSUserDefaults standardUserDefaults] stringForKey:SOOMLA_GENERATED_KEY];
+    if (!soomlaGeneratedId) {
+        soomlaGeneratedId = [NSString stringWithFormat:@"SOOMLA_ID_i%05d%05d", arc4random_uniform(100000), arc4random_uniform(100000)];
+        [[NSUserDefaults standardUserDefaults] setObject:soomlaGeneratedId forKey:SOOMLA_GENERATED_KEY];
+    }
+    return soomlaGeneratedId;
+}
+
 
 + (NSString*)keyFromSecret:(NSString*)secret {
     return [secret stringByAppendingString:[SoomlaUtils deviceId]];
@@ -68,10 +85,10 @@ static NSString *const SOOMLA_DEVICE_KEY = @"soomlaDeviceId";
                                       error: &error];
     if (error) {
         LogError(TAG, ([NSString stringWithFormat:@"There was a problem parsing the given JSON string: %@ error: %@", str, [error localizedDescription]]));
-        
+
         return NULL;
     }
-    
+
     return dict;
 }
 
@@ -83,10 +100,10 @@ static NSString *const SOOMLA_DEVICE_KEY = @"soomlaDeviceId";
                                       error: &error];
     if (error) {
         LogError(TAG, ([NSString stringWithFormat:@"There was a problem parsing the given JSON string: %@ error: %@", str, [error localizedDescription]]));
-        
+
         return NULL;
     }
-    
+
     return arr;
 }
 
@@ -95,13 +112,13 @@ static NSString *const SOOMLA_DEVICE_KEY = @"soomlaDeviceId";
     NSData *jsonData = [NSJSONSerialization dataWithJSONObject:dict
                                                        options:NSJSONWritingPrettyPrinted
                                                          error:&error];
-    
+
     if (! jsonData) {
         LogError(TAG, ([NSString stringWithFormat:@"There was a problem parsing the given NSDictionary. error: %@", [error localizedDescription]]));
-        
+
         return NULL;
     }
-    
+
     return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
 }
 
@@ -110,20 +127,20 @@ static NSString *const SOOMLA_DEVICE_KEY = @"soomlaDeviceId";
     NSData *jsonData = [NSJSONSerialization dataWithJSONObject:arr
                                                        options:NSJSONWritingPrettyPrinted
                                                          error:&error];
-    
+
     if (! jsonData) {
         LogError(TAG, ([NSString stringWithFormat:@"There was a problem parsing the given NSArray. error: %@", [error localizedDescription]]));
-        
+
         return NULL;
     }
-    
+
     return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
 }
 
 + (NSString *) applicationDirectory
 {
     static NSString* appDir = nil;
-    
+
     if (appDir == nil) {
         NSArray *paths = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES);
         if ([paths count] == 0)
@@ -131,10 +148,10 @@ static NSString *const SOOMLA_DEVICE_KEY = @"soomlaDeviceId";
             // *** creation and return of error object omitted for space
             return nil;
         }
-        
+
         NSString *basePath = paths[0];
         NSError *error;
-        
+
         NSFileManager *fManager = [NSFileManager defaultManager];
         if (![fManager fileExistsAtPath:basePath]) {
             if (![fManager createDirectoryAtPath:basePath
@@ -154,7 +171,7 @@ static NSString *const SOOMLA_DEVICE_KEY = @"soomlaDeviceId";
 + (BOOL)addSkipBackupAttributeToItemAtURL:(NSURL *)URL
 {
     assert([[NSFileManager defaultManager] fileExistsAtPath: [URL path]]);
-    
+
     NSError *error = nil;
     BOOL success = [URL setResourceValue: [NSNumber numberWithBool: YES]
                                   forKey: NSURLIsExcludedFromBackupKey error: &error];
