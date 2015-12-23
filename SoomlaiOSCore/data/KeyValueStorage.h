@@ -127,6 +127,14 @@
 
 
 /**
+ Initializes a KeyValueStorage instance with a name and a secret.
+ 
+ @param storageName The name of the storage to use.
+ @param secret The secret to use for encryption.
+ */
+- (id)initWithName:(NSString*)storageName andSecret:(NSString*)secret;
+
+/**
  Retrieves the value for the given `key`.
  
  @param key The key in the key-val pair.
