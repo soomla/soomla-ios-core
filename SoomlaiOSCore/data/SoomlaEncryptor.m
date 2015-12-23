@@ -23,6 +23,7 @@
 
 @implementation SoomlaEncryptor
 
+
 /*
  * The encryption key is comprised of the SOOMLA secret and a unique global identifier for the specific application.
  * NOTE: change the custom secret in SoomlaConfig.h.
@@ -33,7 +34,7 @@
     if (!sec || [sec length]==0) {
         LogError(@"SOOMLA SoomlaEncryptor", @"SOOMLA sercet not provided. This is serious and can lead to multiple errors!");
     }
-    return [sec stringByAppendingString:[SoomlaUtils deviceId]];
+    return [SoomlaUtils keyFromSecret:sec];
 }
 
 + (NSString *)encryptString:(NSString *)data{

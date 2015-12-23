@@ -18,13 +18,17 @@
 #import "SoomlaConfig.h"
 #import "SoomlaUtils.h"
 
-#define DATABASE_NAME @"store.kv.db"
-
 // Key Value Table
 #define KEYVAL_TABLE_NAME   @"kv_store"
 #define KEYVAL_COLUMN_KEY   @"key"
 #define KEYVAL_COLUMN_VAL   @"val"
 
+
+@interface KeyValDatabase()
+
+@property(nonatomic) NSString *dbName;
+
+@end
 
 @implementation KeyValDatabase
 
@@ -47,11 +51,16 @@
 }
 
 - (id)init{
+    return [self initWithName:SOOMLA_DATABASE_NAME];
+}
+
+- (id)initWithName:(NSString*)dbName {
     @synchronized(self) {
         if (self = [super init]) {
+            self.dbName = dbName;
             NSError *error;
-            NSString* oldDatabasebPath = [[self applicationDocumentsDirectory] stringByAppendingPathComponent:DATABASE_NAME];
-            NSString* databasebPath = [[SoomlaUtils applicationDirectory] stringByAppendingPathComponent:DATABASE_NAME];
+            NSString* oldDatabasebPath = [[self applicationDocumentsDirectory] stringByAppendingPathComponent:self.dbName];
+            NSString* databasebPath = [[SoomlaUtils applicationDirectory] stringByAppendingPathComponent:self.dbName];
             NSFileManager *filemgr = [NSFileManager defaultManager];
             if ([filemgr fileExistsAtPath: oldDatabasebPath] == YES) {
                 [[NSFileManager defaultManager] copyItemAtPath:oldDatabasebPath toPath:databasebPath error:&error];
@@ -75,7 +84,7 @@
 
 - (void)deleteKeyValWithKey:(NSString *)key{
     @synchronized(self) {
-        NSString* databasebPath = [[SoomlaUtils applicationDirectory] stringByAppendingPathComponent:DATABASE_NAME];
+        NSString* databasebPath = [[SoomlaUtils applicationDirectory] stringByAppendingPathComponent:self.dbName];
         if (sqlite3_open([databasebPath UTF8String], &database) == SQLITE_OK)
         {
             NSString* deleteStmt = [NSString stringWithFormat:@"DELETE FROM %@ WHERE %@=?",
@@ -105,7 +114,7 @@
 
 - (void)purgeDatabase {
     @synchronized(self) {
-        NSString* databasebPath = [[SoomlaUtils applicationDirectory] stringByAppendingPathComponent:DATABASE_NAME];
+        NSString* databasebPath = [[SoomlaUtils applicationDirectory] stringByAppendingPathComponent:self.dbName];
         if (sqlite3_open([databasebPath UTF8String], &database) == SQLITE_OK)
         {
             NSString* deleteStmt = [NSString stringWithFormat:@"DELETE FROM %@", KEYVAL_TABLE_NAME];
@@ -133,7 +142,7 @@
 - (NSDictionary*)getKeysValsForQuery:(NSString*)query {
     @synchronized(self) {
         NSMutableDictionary *results = [NSMutableDictionary dictionary];
-        NSString* databasebPath = [[SoomlaUtils applicationDirectory] stringByAppendingPathComponent:DATABASE_NAME];
+        NSString* databasebPath = [[SoomlaUtils applicationDirectory] stringByAppendingPathComponent:self.dbName];
         if (sqlite3_open([databasebPath UTF8String], &database) == SQLITE_OK)
         {
             sqlite3_stmt *statement = nil;
@@ -174,7 +183,7 @@
 - (NSArray*)getValsForQuery:(NSString*)query withLimit:(int)limit {
     @synchronized(self) {
         NSMutableArray *results = [NSMutableArray array];
-        NSString* databasebPath = [[SoomlaUtils applicationDirectory] stringByAppendingPathComponent:DATABASE_NAME];
+        NSString* databasebPath = [[SoomlaUtils applicationDirectory] stringByAppendingPathComponent:self.dbName];
         if (sqlite3_open([databasebPath UTF8String], &database) == SQLITE_OK)
         {
             sqlite3_stmt *statement = nil;
@@ -216,7 +225,7 @@
 - (NSString*)getOneForQuery:(NSString*)query {
     @synchronized(self) {
         NSString *result = NULL;
-        NSString* databasebPath = [[SoomlaUtils applicationDirectory] stringByAppendingPathComponent:DATABASE_NAME];
+        NSString* databasebPath = [[SoomlaUtils applicationDirectory] stringByAppendingPathComponent:self.dbName];
         if (sqlite3_open([databasebPath UTF8String], &database) == SQLITE_OK)
         {
             sqlite3_stmt *statement = nil;
@@ -252,7 +261,7 @@
 - (int)getCountForQuery:(NSString*)query {
     @synchronized(self) {
         int count = 0;
-        NSString* databasebPath = [[SoomlaUtils applicationDirectory] stringByAppendingPathComponent:DATABASE_NAME];
+        NSString* databasebPath = [[SoomlaUtils applicationDirectory] stringByAppendingPathComponent:self.dbName];
         if (sqlite3_open([databasebPath UTF8String], &database) == SQLITE_OK)
         {
             sqlite3_stmt *statement = nil;
@@ -282,7 +291,7 @@
 - (NSArray *)getAllKeys {
     @synchronized(self) {
         NSMutableArray *results = [NSMutableArray array];
-        NSString* databasebPath = [[SoomlaUtils applicationDirectory] stringByAppendingPathComponent:DATABASE_NAME];
+        NSString* databasebPath = [[SoomlaUtils applicationDirectory] stringByAppendingPathComponent:self.dbName];
         if (sqlite3_open([databasebPath UTF8String], &database) == SQLITE_OK)
         {
             sqlite3_stmt *statement = nil;
@@ -318,7 +327,7 @@
 - (NSString*)getValForKey:(NSString *)key{
     @synchronized(self) {
         NSString *result = nil;
-        NSString* databasebPath = [[SoomlaUtils applicationDirectory] stringByAppendingPathComponent:DATABASE_NAME];
+        NSString* databasebPath = [[SoomlaUtils applicationDirectory] stringByAppendingPathComponent:self.dbName];
         if (sqlite3_open([databasebPath UTF8String], &database) == SQLITE_OK)
         {
             sqlite3_stmt *statement = nil;
@@ -359,7 +368,7 @@
 
 - (void)setVal:(NSString *)val forKey:(NSString *)key{
     @synchronized(self) {
-        NSString* databasebPath = [[SoomlaUtils applicationDirectory] stringByAppendingPathComponent:DATABASE_NAME];
+        NSString* databasebPath = [[SoomlaUtils applicationDirectory] stringByAppendingPathComponent:self.dbName];
         if (sqlite3_open([databasebPath UTF8String], &database) == SQLITE_OK)
         {
             

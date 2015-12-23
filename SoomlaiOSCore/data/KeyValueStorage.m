@@ -20,70 +20,122 @@
 #import "KeyValDatabase.h"
 #import "SoomlaConfig.h"
 #import "SoomlaUtils.h"
+#import "Soomla.h"
+
+@interface KeyValueStorage()
+
+@property(nonatomic) KeyValDatabase *kvDatabase;
+@property(nonatomic) NSString *storageName;
+@property(nonatomic) NSString *key;
+
+@end
 
 @implementation KeyValueStorage
 
-+ (KeyValDatabase*)kvDatabase {
-    static KeyValDatabase* dbInstance;
-    if (!dbInstance) {
-        dbInstance = [[KeyValDatabase alloc] init];
-    }
-    return dbInstance;
++ (NSString*)getValueForKey:(NSString*)key {
+    return [[self kvStorage] getValueForKey:key];
 }
 
-- (id)init{
-    self = [super init];
-    if (self){
-        
++ (void)setValue:(NSString*)val forKey:(NSString*)key {
+    [[self kvStorage] setValue:val forKey:key];
+}
+
++ (void)deleteValueForKey:(NSString*)key {
+    [[self kvStorage] deleteValueForKey:key];
+}
+
++ (NSDictionary*)getKeysValuesForNonEncryptedQuery:(NSString*)query {
+    return [[self kvStorage] getKeysValuesForNonEncryptedQuery:query];
+}
+
++ (NSArray*)getValuesForNonEncryptedQuery:(NSString*)query {
+    return [[self kvStorage] getValuesForNonEncryptedQuery:query];
+}
+
++ (NSArray*)getValuesForNonEncryptedQuery:(NSString*)query withLimit:(int)limit {
+    return [[self kvStorage] getValuesForNonEncryptedQuery:query withLimit:limit];
+}
+
++ (NSString*)getOneForNonEncryptedQuery:(NSString*)query {
+    return [[self kvStorage] getOneForNonEncryptedQuery:query];
+}
+
++ (int)getCountForNonEncryptedQuery:(NSString*)query {
+    return [[self kvStorage] getCountForNonEncryptedQuery:query];
+}
+
++ (NSString*)getValueForNonEncryptedKey:(NSString*)key {
+    return [[self kvStorage] getValueForNonEncryptedKey:key];
+}
+
++ (NSArray *)getEncryptedKeys {
+    return [[self kvStorage] getEncryptedKeys];
+}
+
++ (void)setValue:(NSString*)val forNonEncryptedKey:(NSString*)key {
+    [[self kvStorage] setValue:val forNonEncryptedKey:key];
+}
+
++ (void)deleteValueForNonEncryptedKey:(NSString*)key {
+    [[self kvStorage] deleteValueForNonEncryptedKey:key];
+}
+
++ (void)purge {
+    [[self kvStorage] purge];
+}
+
++ (KeyValueStorage*)kvStorage {
+    static KeyValueStorage* kvStorage;
+    if (!kvStorage) {
+        kvStorage = [[KeyValueStorage alloc] initWithName:SOOMLA_DATABASE_NAME andSecret:SOOMLA_SECRET];
     }
     
-    return self;
+    return kvStorage;
 }
 
-+ (NSString*)getValueForKey:(NSString*)key {
-    return [self getValueForKey:key withEncryptionKey:nil];
+
+- (id)initWithName:(NSString*)storageName andSecret:(NSString*)secret {
+    @synchronized(self) {
+        if (self = [super init]) {
+            if (!secret || [secret length]==0) {
+                [NSException raise:@"Invalid secret value" format:@"You must initialize KeyValueStorage with a secret. storageName: %@", storageName];
+            }
+            self.storageName = storageName;
+            self.key = [SoomlaUtils keyFromSecret:secret];
+            self.kvDatabase = [[KeyValDatabase alloc] initWithName:storageName];
+        }
+        return self;
+    }
 }
 
-+ (NSString*)getValueForKey:(NSString*)key withEncryptionKey:(NSString *)encryptionKey {
-    key = [SoomlaEncryptor encryptString:key withKey:encryptionKey];
-    NSString* val = [[self kvDatabase] getValForKey:key];
+- (NSString*)getValueForKey:(NSString*)key {
+    key = [SoomlaEncryptor encryptString:key withKey:self.key];
+    NSString* val = [self.kvDatabase getValForKey:key];
     if (val && [val length]>0){
-        return [SoomlaEncryptor decryptToString:val withKey:encryptionKey];
+        return [SoomlaEncryptor decryptToString:val withKey:self.key];
     }
     
     return NULL;
 }
 
-+ (void)setValue:(NSString*)val forKey:(NSString*)key {
-    [self setValue:val forKey:key withEncryptionKey:nil];
+- (void)setValue:(NSString*)val forKey:(NSString*)key {
+    key = [SoomlaEncryptor encryptString:key withKey:self.key];
+    [self.kvDatabase setVal:[SoomlaEncryptor encryptString:val withKey:self.key] forKey:key];
 }
 
-+ (void)setValue:(NSString*)val forKey:(NSString*)key withEncryptionKey:(NSString *)encryptionKey {
-    key = [SoomlaEncryptor encryptString:key withKey:encryptionKey];
-    [[self kvDatabase] setVal:[SoomlaEncryptor encryptString:val withKey:encryptionKey] forKey:key];
+- (void)deleteValueForKey:(NSString*)key {
+    key = [SoomlaEncryptor encryptString:key withKey:self.key];
+    [self.kvDatabase deleteKeyValWithKey:key];
 }
 
-+ (void)deleteValueForKey:(NSString*)key {
-    [self deleteValueForKey:key withEncryptionKey:nil];
-}
-
-+ (void)deleteValueForKey:(NSString*)key withEncryptionKey:(NSString *)encryptionKey {
-    key = [SoomlaEncryptor encryptString:key withKey:encryptionKey];
-    [[self kvDatabase] deleteKeyValWithKey:key];
-}
-
-+ (NSDictionary*)getKeysValuesForNonEncryptedQuery:(NSString*)query {
-    return [self getKeysValuesForNonEncryptedQuery:query withEncryptionKey:nil];
-}
-
-+ (NSDictionary*)getKeysValuesForNonEncryptedQuery:(NSString*)query withEncryptionKey:(NSString *)encryptionKey {
-    NSDictionary* dbResults = [[self kvDatabase] getKeysValsForQuery:query];
+- (NSDictionary*)getKeysValuesForNonEncryptedQuery:(NSString*)query {
+    NSDictionary* dbResults = [self.kvDatabase getKeysValsForQuery:query];
     NSMutableDictionary* results = [NSMutableDictionary dictionary];
     NSArray* keys = [dbResults allKeys];
     for (NSString* key in keys) {
         NSString* val = dbResults[key];
         if (val && [val length]>0){
-            NSString* valDec = [SoomlaEncryptor decryptToString:val withKey:encryptionKey];
+            NSString* valDec = [SoomlaEncryptor decryptToString:val withKey:self.key];
             if (valDec && [valDec length]>0){
                 [results setObject:valDec forKey:key];
             }
@@ -92,25 +144,16 @@
     
     return results;
 }
-
-+ (NSArray*)getValuesForNonEncryptedQuery:(NSString*)query {
-    return [self getValuesForNonEncryptedQuery:query withLimit:0 withEncryptionKey:nil];
+- (NSArray*)getValuesForNonEncryptedQuery:(NSString*)query {
+    return [self getValuesForNonEncryptedQuery:query withLimit:0];
 }
 
-+ (NSArray*)getValuesForNonEncryptedQuery:(NSString*)query withEncryptionKey:(NSString *)encryptionKey {
-    return [self getValuesForNonEncryptedQuery:query withLimit:0 withEncryptionKey:encryptionKey];
-}
-
-+ (NSArray*)getValuesForNonEncryptedQuery:(NSString*)query withLimit:(int)limit {
-    return [self getValuesForNonEncryptedQuery:query withLimit:limit withEncryptionKey:nil];
-}
-
-+ (NSArray*)getValuesForNonEncryptedQuery:(NSString*)query withLimit:(int)limit withEncryptionKey:(NSString *)encryptionKey {
-    NSArray* vals = [[self kvDatabase] getValsForQuery:query withLimit:limit];
+- (NSArray*)getValuesForNonEncryptedQuery:(NSString*)query withLimit:(int)limit {
+    NSArray* vals = [self.kvDatabase getValsForQuery:query withLimit:limit];
     NSMutableArray* results = [NSMutableArray array];
     for (NSString* val in vals) {
         if (val && [val length]>0){
-            NSString* valDec = [SoomlaEncryptor decryptToString:val withKey:encryptionKey];
+            NSString* valDec = [SoomlaEncryptor decryptToString:val withKey:self.key];
             if (valDec && [valDec length]>0){
                 [results addObject:valDec];
             }
@@ -120,14 +163,10 @@
     return results;
 }
 
-+ (NSString*)getOneForNonEncryptedQuery:(NSString*)query {
-    return [self getOneForNonEncryptedQuery:query withEncryptionKey:nil];
-}
-
-+ (NSString*)getOneForNonEncryptedQuery:(NSString*)query withEncryptionKey:(NSString *)encryptionKey {
-    NSString* val = [[self kvDatabase] getOneForQuery:query];
+- (NSString*)getOneForNonEncryptedQuery:(NSString*)query {
+    NSString* val = [self.kvDatabase getOneForQuery:query];
     if (val && [val length]>0){
-        NSString* valDec = [SoomlaEncryptor decryptToString:val withKey:encryptionKey];
+        NSString* valDec = [SoomlaEncryptor decryptToString:val withKey:self.key];
         if (valDec && [valDec length]>0){
             return valDec;
         }
@@ -136,34 +175,26 @@
     return NULL;
 }
 
-+ (int)getCountForNonEncryptedQuery:(NSString*)query {
-    return [[self kvDatabase] getCountForQuery:query];
+- (int)getCountForNonEncryptedQuery:(NSString*)query {
+    return [self.kvDatabase getCountForQuery:query];
 }
 
-+ (NSString*)getValueForNonEncryptedKey:(NSString*)key {
-    return [self getValueForNonEncryptedKey:key withEncryptionKey:nil];
-}
-
-+ (NSString*)getValueForNonEncryptedKey:(NSString*)key withEncryptionKey:(NSString *)encryptionKey {
-    NSString* val = [[self kvDatabase] getValForKey:key];
+- (NSString*)getValueForNonEncryptedKey:(NSString*)key {
+    NSString* val = [self.kvDatabase getValForKey:key];
     if (val && [val length]>0){
-        return [SoomlaEncryptor decryptToString:val withKey:encryptionKey];
+        return [SoomlaEncryptor decryptToString:val withKey:self.key];
     }
     
     return NULL;
 }
 
-+ (NSArray *)getEncryptedKeys {
-    return [self getEncryptedKeysWithEncryptionKey:nil];
-}
-
-+ (NSArray *)getEncryptedKeysWithEncryptionKey:(NSString *)encryptionKey {
-    NSArray *encryptedKeys = [[self kvDatabase] getAllKeys];
+- (NSArray *)getEncryptedKeys {
+    NSArray *encryptedKeys = [self.kvDatabase getAllKeys];
     NSMutableArray *resultKeys = [NSMutableArray array];
     
     for (NSString *encryptedKey in encryptedKeys) {
         @try {
-            NSString *unencryptedKey = [SoomlaEncryptor decryptToString:encryptedKey withKey:encryptionKey];
+            NSString *unencryptedKey = [SoomlaEncryptor decryptToString:encryptedKey withKey:self.key];
             if (unencryptedKey) {
                 [resultKeys addObject:unencryptedKey];
             }
@@ -176,20 +207,16 @@
     return resultKeys;
 }
 
-+ (void)setValue:(NSString*)val forNonEncryptedKey:(NSString*)key {
-    [self setValue:val forNonEncryptedKey:key withEncryptionKey:nil];
+- (void)setValue:(NSString*)val forNonEncryptedKey:(NSString*)key {
+    [self.kvDatabase setVal:[SoomlaEncryptor encryptString:val withKey:self.key] forKey:key];
 }
 
-+ (void)setValue:(NSString*)val forNonEncryptedKey:(NSString*)key withEncryptionKey:(NSString *)encryptionKey {
-    [[self kvDatabase] setVal:[SoomlaEncryptor encryptString:val withKey:encryptionKey] forKey:key];
+- (void)deleteValueForNonEncryptedKey:(NSString*)key {
+    [self.kvDatabase deleteKeyValWithKey:key];
 }
 
-+ (void)deleteValueForNonEncryptedKey:(NSString*)key {
-    [[self kvDatabase] deleteKeyValWithKey:key];
-}
-
-+ (void)purge {
-    [[self kvDatabase] purgeDatabase];
+- (void)purge {
+    [self.kvDatabase purgeDatabase];
 }
 
 static NSString* TAG = @"SOOMLA KeyValueStorage";

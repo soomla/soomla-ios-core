@@ -48,6 +48,7 @@
  */
 + (NSString*)deviceId;
 
++ (NSString*)keyFromSecret:(NSString*)secret;
 
 + (NSMutableDictionary*)jsonStringToDict:(NSString*)str;
 

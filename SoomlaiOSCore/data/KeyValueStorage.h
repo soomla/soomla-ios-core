@@ -32,30 +32,12 @@
 + (NSString*)getValueForKey:(NSString*)key;
 
 /**
- Retrieves the value for the given `key`.
- 
- @param key The key in the key-val pair.
- @param encryptionKey the key used for encrypting/decrypting keys/values
- @return The value for given key.
- */
-+ (NSString*)getValueForKey:(NSString*)key withEncryptionKey:(NSString *)encryptionKey;
-
-/**
  Sets the given value to the given `key`.
  
  @param val The val in the key-val pair.
  @param key The key in the key-val pair.
  */
 + (void)setValue:(NSString*)val forKey:(NSString*)key;
-
-/**
- Sets the given value to the given `key`.
- 
- @param val The val in the key-val pair.
- @param key The key in the key-val pair.
- @param encryptionKey the key used for encrypting/decrypting keys/values
- */
-+ (void)setValue:(NSString*)val forKey:(NSString*)key withEncryptionKey:(NSString *)encryptionKey;
 
 /**
  Deletes the key-val pair with the given `key`.
@@ -65,29 +47,12 @@
 + (void)deleteValueForKey:(NSString*)key;
 
 /**
- Deletes the key-val pair with the given `key`.
- 
- @param key The key in the key-val pair.
- @param encryptionKey the key used for encrypting/decrypting keys/values
- */
-+ (void)deleteValueForKey:(NSString*)key withEncryptionKey:(NSString *)encryptionKey;
-
-/**
  Retrieves the key-val pairs that answer the given `query`.
  
  @param query What to fetch from the DB.
  @return The key-val pairs that answer the given `query`.
  */
 + (NSDictionary*)getKeysValuesForNonEncryptedQuery:(NSString*)query;
-
-/**
- Retrieves the key-val pairs that answer the given `query`.
- 
- @param query What to fetch from the DB.
- @param encryptionKey the key used for encrypting/decrypting keys/values
- @return The key-val pairs that answer the given `query`.
- */
-+ (NSDictionary*)getKeysValuesForNonEncryptedQuery:(NSString*)query withEncryptionKey:(NSString *)encryptionKey;
 
 /**
  Retrieves the values of the key-val pairs that answer the given `query`.
@@ -101,29 +66,10 @@
  Retrieves the values of the key-val pairs that answer the given `query`.
  
  @param query What to fetch from the DB.
- @param encryptionKey the key used for encrypting/decrypting keys/values
- @return The values that answer the given `query`.
- */
-+ (NSArray*)getValuesForNonEncryptedQuery:(NSString*)query withEncryptionKey:(NSString *)encryptionKey;
-
-/**
- Retrieves the values of the key-val pairs that answer the given `query`.
- 
- @param query What to fetch from the DB.
  @param limit the max amount of fetched entries.
  @return The values that answer the given `query`.
  */
 + (NSArray*)getValuesForNonEncryptedQuery:(NSString*)query withLimit:(int)limit;
-
-/**
- Retrieves the values of the key-val pairs that answer the given `query`.
- 
- @param query What to fetch from the DB.
- @param limit the max amount of fetched entries.
- @param encryptionKey the key used for encrypting/decrypting keys/values
- @return The values that answer the given `query`.
- */
-+ (NSArray*)getValuesForNonEncryptedQuery:(NSString*)query withLimit:(int)limit withEncryptionKey:(NSString *)encryptionKey;
 
 /**
  Retrieves ONE of the key-val pairs that answer the given `query`.
@@ -132,15 +78,6 @@
  @return ONE value that answer the given `query` (the first one).
  */
 + (NSString*)getOneForNonEncryptedQuery:(NSString*)query;
-
-/**
- Retrieves ONE of the key-val pairs that answer the given `query`.
- 
- @param query What to fetch from the DB.
- @param encryptionKey the key used for encrypting/decrypting keys/values
- @return ONE value that answer the given `query` (the first one).
- */
-+ (NSString*)getOneForNonEncryptedQuery:(NSString*)query withEncryptionKey:(NSString *)encryptionKey;
 
 /**
  Retrieves the number of the key-val pairs that answer the given `query`.
@@ -159,28 +96,11 @@
 + (NSString*)getValueForNonEncryptedKey:(NSString*)key;
 
 /**
- Retrieves the value for the given `key`.
- 
- @param key The key in the key-val pair.
- @param encryptionKey the key used for encrypting/decrypting keys/values
- @return The value for given `key`.
- */
-+ (NSString*)getValueForNonEncryptedKey:(NSString*)key withEncryptionKey:(NSString *)encryptionKey;
-
-/**
  Gets all keys in the storage with no encryption
  
  @return a List of unencrypted keys
  */
 + (NSArray *)getEncryptedKeys;
-
-/**
- Gets all keys in the storage with no encryption
- 
- @param encryptionKey the key used for encrypting/decrypting keys/values
- @return a List of unencrypted keys
- */
-+ (NSArray *)getEncryptedKeysWithEncryptionKey:(NSString *)encryptionKey;
 
 /**
  Sets the given value to the given `key`.
@@ -191,15 +111,6 @@
 + (void)setValue:(NSString*)val forNonEncryptedKey:(NSString*)key;
 
 /**
- Sets the given value to the given `key`.
- 
- @param val The `val` of the key-val pair.
- @param key The `key` of the key-val pair.
- @param encryptionKey the key used for encrypting/decrypting keys/values
- */
-+ (void)setValue:(NSString*)val forNonEncryptedKey:(NSString*)key withEncryptionKey:(NSString *)encryptionKey;
-
-/**
  Deletes the key-val pair with the given `key`.
  
  @param key The key in the key-val pair.
@@ -207,11 +118,115 @@
 + (void)deleteValueForNonEncryptedKey:(NSString*)key;
 
 /**
- Purges the entire DB
+ Purges the entire DB (default storage)
  
  NOTE: Use with caution, since this will delete all the user's local information
  This message is used mainly for while in testing.
  */
 + (void)purge;
+
+
+/**
+ Retrieves the value for the given `key`.
+ 
+ @param key The key in the key-val pair.
+ @return The value for given key.
+ */
+- (NSString*)getValueForKey:(NSString*)key;
+
+/**
+ Sets the given value to the given `key`.
+ 
+ @param val The val in the key-val pair.
+ @param key The key in the key-val pair.
+ */
+- (void)setValue:(NSString*)val forKey:(NSString*)key;
+
+/**
+ Deletes the key-val pair with the given `key`.
+ 
+ @param key The key in the key-val pair.
+ */
+- (void)deleteValueForKey:(NSString*)key;
+
+/**
+ Retrieves the key-val pairs that answer the given `query`.
+ 
+ @param query What to fetch from the DB.
+ @return The key-val pairs that answer the given `query`.
+ */
+- (NSDictionary*)getKeysValuesForNonEncryptedQuery:(NSString*)query;
+
+/**
+ Retrieves the values of the key-val pairs that answer the given `query`.
+ 
+ @param query What to fetch from the DB.
+ @return The values that answer the given `query`.
+ */
+- (NSArray*)getValuesForNonEncryptedQuery:(NSString*)query;
+
+/**
+ Retrieves the values of the key-val pairs that answer the given `query`.
+ 
+ @param query What to fetch from the DB.
+ @param limit the max amount of fetched entries.
+ @return The values that answer the given `query`.
+ */
+- (NSArray*)getValuesForNonEncryptedQuery:(NSString*)query withLimit:(int)limit;
+
+/**
+ Retrieves ONE of the key-val pairs that answer the given `query`.
+ 
+ @param query What to fetch from the DB.
+ @return ONE value that answer the given `query` (the first one).
+ */
+- (NSString*)getOneForNonEncryptedQuery:(NSString*)query;
+
+/**
+ Retrieves the number of the key-val pairs that answer the given `query`.
+ 
+ @param query What to count in the DB.
+ @return the number of values that answer the given `query`.
+ */
+- (int)getCountForNonEncryptedQuery:(NSString*)query;
+
+/**
+ Retrieves the value for the given `key`.
+ 
+ @param key The key in the key-val pair.
+ @return The value for given `key`.
+ */
+- (NSString*)getValueForNonEncryptedKey:(NSString*)key;
+
+/**
+ Gets all keys in the storage with no encryption
+ 
+ @param storageName the storage name to perform the operation on
+ @return a List of unencrypted keys
+ */
+- (NSArray *)getEncryptedKeys;
+
+/**
+ Sets the given value to the given `key`.
+ 
+ @param val The `val` of the key-val pair.
+ @param key The `key` of the key-val pair.
+ */
+- (void)setValue:(NSString*)val forNonEncryptedKey:(NSString*)key;
+
+/**
+ Deletes the key-val pair with the given `key`.
+ 
+ @param key The key in the key-val pair.
+ */
+- (void)deleteValueForNonEncryptedKey:(NSString*)key;
+
+/**
+ Purges the entire DB of a specific storage
+ 
+ NOTE: Use with caution, since this will delete all the user's local information
+ This message is used mainly for while in testing.
+ */
+- (void)purge;
 
 @end

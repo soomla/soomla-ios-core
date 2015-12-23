@@ -56,6 +56,10 @@ static NSString *const SOOMLA_DEVICE_KEY = @"soomlaDeviceId";
     return udid;
 }
 
++ (NSString*)keyFromSecret:(NSString*)secret {
+    return [secret stringByAppendingString:[SoomlaUtils deviceId]];
+}
+
 + (NSMutableDictionary*)jsonStringToDict:(NSString*)str {
     NSError* error = NULL;
     NSMutableDictionary *dict =
