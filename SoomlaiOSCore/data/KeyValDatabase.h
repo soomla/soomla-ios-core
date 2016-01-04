@@ -17,6 +17,8 @@
 #import <Foundation/Foundation.h>
 #import <sqlite3.h>
 
+#define SOOMLA_DATABASE_NAME @"store.kv.db"
+
 /**
  The `KeyValDatabase` provides basic key-value store above SQLite.
  */
@@ -26,6 +28,8 @@
 }
 
 - (id)init;
+
+- (id)initWithName:(NSString*)dbName;
 
 /**
  Sets the given `value` to the given `key`.
