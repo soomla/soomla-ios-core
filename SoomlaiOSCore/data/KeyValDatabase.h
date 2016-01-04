@@ -17,6 +17,8 @@
 #import <Foundation/Foundation.h>
 #import <sqlite3.h>
 
+#define SOOMLA_DATABASE_NAME @"store.kv.db"
+
 /**
  The `KeyValDatabase` provides basic key-value store above SQLite.
  */
@@ -26,6 +28,8 @@
 }
 
 - (id)init;
+
+- (id)initWithName:(NSString*)dbName;
 
 /**
  Sets the given `value` to the given `key`.
@@ -59,6 +63,16 @@
  @return The values of the key-val pairs fetched.
  */
 - (NSArray*)getValsForQuery:(NSString*)query;
+
+/**
+ Retrieves from the DB the values of the key-val pairs that answer the given
+ `query`.
+ 
+ @param query The query that indicates what to fetch from the DB.
+ @param limit the max amount of fetched entries.
+ @return The values of the key-val pairs fetched.
+ */
+- (NSArray*)getValsForQuery:(NSString*)query withLimit:(int)limit;
 
 /**
  Retrieves from the DB ONE value of the key-val pairs that answer the given
